@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sesión 8 | Repaso final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* SISTEMA DE DISEÑO VDC. Tokens fijados en Sesión 1, idénticos. */
+:root {
+  --bone: #F6F4EF; --paper: #FCFBF8; --ink: #1B1E2B; --ink-soft: #3A3E4D;
+  --mid: #7A7D89; --line: #E2DDD2;
+  --indigo: #3B4C8A; --indigo-deep: #2C3A6B; --coral: #E0674F; --sage: #6E8B6A; --gold: #C6A15B;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--ink); font-family: var(--sans); overflow: hidden; }
+.deck { width: 100%; height: 100vh; position: relative; }
+.slide { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bone); overflow: hidden; }
+.slide.active { display: flex; }
+.weave { position: absolute; inset: 0; pointer-events: none; opacity: 0.5; z-index: 0; }
+
+/* Navegación */
+.progress-bar { position: fixed; bottom: 0; left: 0; height: 4px; background: var(--indigo); transition: width 0.4s ease; z-index: 100; }
+.counter { position: fixed; bottom: 16px; right: 22px; font-size: 15px; font-weight: 600; letter-spacing: 0.12em; color: var(--mid); z-index: 100; }
+.nav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
+.nav button { background: var(--paper); border: 1px solid var(--line); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; color: var(--ink-soft); font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.nav button:hover, .nav button:focus-visible { background: var(--indigo); color: #fff; border-color: var(--indigo); outline: none; }
+
+/* Header */
+.slide-header { position: relative; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; padding: 32px 56px 22px; background: var(--paper); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.kicker { font-size: 15px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--indigo); margin-bottom: 8px; }
+.kicker.coral { color: var(--coral); } .kicker.sage { color: var(--sage); } .kicker.gold { color: var(--gold); }
+.slide-h1 { font-family: var(--serif); font-size: 34px; font-weight: 600; color: var(--ink); line-height: 1.15; max-width: 900px; }
+.slide-num { font-family: var(--serif); font-size: 60px; font-weight: 600; color: var(--line); line-height: 1; user-select: none; flex-shrink: 0; margin-left: 24px; }
+.band { height: 6px; flex-shrink: 0; position: relative; z-index: 2; }
+.band.indigo { background: var(--indigo); } .band.coral { background: var(--coral); } .band.sage { background: var(--sage); } .band.gold { background: var(--gold); }
+
+/* Portada */
+.slide-portada { background: var(--paper); justify-content: center; padding: 72px 80px; position: relative; height: 100%; }
+.portada-rule { position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, var(--indigo) 0%, var(--indigo) 40%, var(--coral) 40%, var(--coral) 65%, var(--sage) 65%, var(--sage) 85%, var(--gold) 85%); z-index: 3; }
+.portada-inner { position: relative; z-index: 2; max-width: 860px; }
+.portada-tag { font-size: 16px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--indigo); margin-bottom: 28px; }
+.portada-title { font-family: var(--serif); font-size: 60px; font-weight: 600; color: var(--ink); line-height: 1.08; letter-spacing: -0.01em; margin-bottom: 20px; }
+.portada-sub { font-family: var(--serif); font-size: 28px; font-weight: 400; font-style: italic; color: var(--mid); margin-bottom: 40px; }
+.portada-divider { width: 64px; height: 3px; background: var(--gold); margin-bottom: 28px; }
+.portada-meta { display: flex; flex-direction: column; gap: 6px; }
+.portada-meta-line { font-size: 17px; color: var(--ink-soft); }
+.portada-meta-line strong { color: var(--ink); font-weight: 600; }
+
+/* Apertura de bloque */
+.slide-apertura { justify-content: center; align-items: center; padding: 72px; background: var(--bone); position: relative; }
+.apertura-inner { position: relative; z-index: 2; max-width: 960px; text-align: center; }
+.apertura-label { font-size: 16px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--coral); margin-bottom: 32px; }
+.apertura-label.sage { color: var(--sage); } .apertura-label.indigo { color: var(--indigo); } .apertura-label.gold { color: var(--gold); }
+.apertura-q { font-family: var(--serif); font-size: 42px; font-weight: 500; color: var(--ink); line-height: 1.32; margin-bottom: 36px; }
+.apertura-rule { width: 56px; height: 3px; background: var(--gold); margin: 0 auto 28px; }
+.apertura-note { font-size: 20px; color: var(--ink-soft); line-height: 1.5; }
+.apertura-note strong { color: var(--indigo); font-weight: 600; }
+
+/* Agenda */
+.body-pad { flex: 1; padding: 26px 56px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; min-height: 0; }
+.agenda-list { display: flex; flex-direction: column; gap: 10px; }
+.agenda-row { display: flex; align-items: center; gap: 26px; padding: 13px 26px; background: var(--paper); border-left: 5px solid var(--line); }
+.agenda-row.indigo { border-color: var(--indigo); } .agenda-row.coral { border-color: var(--coral); } .agenda-row.sage { border-color: var(--sage); } .agenda-row.gold { border-color: var(--gold); }
+.agenda-time { font-size: 16px; font-weight: 700; letter-spacing: 0.06em; color: var(--mid); min-width: 84px; }
+.agenda-title { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.agenda-desc { font-size: 17px; color: var(--ink-soft); line-height: 1.4; }
+
+/* Concepto */
+.concepto { flex: 1; padding: 40px 56px; display: flex; gap: 44px; align-items: center; position: relative; z-index: 2; min-height: 0; }
+.concepto-left { flex: 1.4; }
+.concepto-label { font-size: 15px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--indigo); margin-bottom: 18px; }
+.concepto-label.coral { color: var(--coral); } .concepto-label.sage { color: var(--sage); } .concepto-label.gold { color: var(--gold); }
+.concepto-text { font-family: var(--serif); font-size: 27px; font-weight: 400; color: var(--ink); line-height: 1.5; margin-bottom: 26px; }
+.concepto-quote { padding: 22px 26px; background: var(--paper); border-left: 4px solid var(--gold); font-size: 20px; font-weight: 500; color: var(--ink-soft); line-height: 1.5; }
+.concepto-right { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.punto { padding: 18px 22px; background: var(--paper); border-top: 3px solid var(--indigo); }
+.punto.coral { border-color: var(--coral); } .punto.sage { border-color: var(--sage); } .punto.gold { border-color: var(--gold); }
+.punto-num { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--indigo); margin-bottom: 6px; }
+.punto.coral .punto-num { color: var(--coral); } .punto.sage .punto-num { color: var(--sage); } .punto.gold .punto-num { color: var(--gold); }
+.punto-text { font-size: 18px; color: var(--ink-soft); line-height: 1.4; }
+
+/* Rejilla de ideas */
+.ideas { display: flex; flex-direction: column; gap: 18px; }
+.ideas.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ideas.grid.tight { gap: 10px 16px; }
+.ideas.grid.tight .idea { padding: 12px 22px; gap: 18px; align-items: center; }
+.ideas.grid.tight .idea-n { font-size: 34px; min-width: 30px; }
+.ideas.grid.tight .idea-t { font-size: 19px; margin-bottom: 2px; }
+.ideas.grid.tight .idea-d { font-size: 17px; line-height: 1.35; }
+.idea { display: flex; gap: 24px; align-items: flex-start; padding: 20px 26px; background: var(--paper); }
+.ideas.grid .idea { border-top: 3px solid var(--line); }
+.idea.coral { border-top-color: var(--coral); } .idea.sage { border-top-color: var(--sage); } .idea.indigo { border-top-color: var(--indigo); } .idea.gold { border-top-color: var(--gold); }
+.idea-n { font-family: var(--serif); font-size: 46px; font-weight: 600; color: var(--line); line-height: 0.9; min-width: 44px; }
+.idea.sage .idea-n { color: var(--sage); } .idea.gold .idea-n { color: var(--gold); }
+.idea-t { font-family: var(--serif); font-size: 23px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.idea-d { font-size: 18px; color: var(--ink-soft); line-height: 1.5; }
+
+/* Caso */
+.caso { flex: 1; padding: 36px 56px; display: flex; gap: 40px; align-items: center; position: relative; z-index: 2; min-height: 0; }
+.caso-left { flex: 1.5; }
+.caso-kicker { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--coral); margin-bottom: 14px; }
+.caso-kicker.sage { color: var(--sage); } .caso-kicker.indigo { color: var(--indigo); } .caso-kicker.gold { color: var(--gold); }
+.caso-p { font-size: 20px; color: var(--ink-soft); line-height: 1.6; margin-bottom: 16px; }
+.caso-q { padding: 20px 24px; background: var(--paper); border-left: 4px solid var(--coral); margin-top: 6px; }
+.caso-q.sage { border-left-color: var(--sage); } .caso-q.indigo { border-left-color: var(--indigo); } .caso-q.gold { border-left-color: var(--gold); }
+.caso-q-label { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--coral); margin-bottom: 6px; }
+.caso-q.sage .caso-q-label { color: var(--sage); } .caso-q.indigo .caso-q-label { color: var(--indigo); } .caso-q.gold .caso-q-label { color: var(--gold); }
+.caso-q-text { font-family: var(--serif); font-size: 21px; font-style: italic; color: var(--ink); line-height: 1.45; }
+.caso-viz { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.dato { padding: 16px 20px; background: var(--paper); border-top: 3px solid var(--line); }
+.dato.coral { border-top-color: var(--coral); } .dato.sage { border-top-color: var(--sage); } .dato.indigo { border-top-color: var(--indigo); } .dato.gold { border-top-color: var(--gold); }
+.dato-label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-bottom: 5px; }
+.dato-text { font-size: 18px; color: var(--ink-soft); line-height: 1.4; }
+.dato-big { font-family: var(--serif); font-size: 40px; font-weight: 600; color: var(--ink); line-height: 1; margin-bottom: 6px; }
+.dato.own { border-color: var(--gold); background: linear-gradient(180deg, rgba(198,161,91,0.10), var(--paper)); }
+.dato.own .dato-label { color: var(--gold); }
+.source { font-size: 14px; color: var(--mid); margin-top: 14px; }
+
+/* Banda oscura */
+.stat-wide { display: flex; gap: 32px; align-items: center; padding: 22px 28px; background: var(--ink); color: var(--paper); margin-top: 18px; }
+.stat-wide .stat-n { font-family: var(--serif); font-weight: 600; color: var(--coral); font-size: 46px; line-height: 1; white-space: nowrap; }
+.stat-wide .stat-l { color: #D9DAE2; font-size: 20px; line-height: 1.45; }
+.stat-wide .stat-l strong { color: var(--paper); }
+
+/* Dúo de preguntas */
+.duo { flex: 1; padding: 40px 56px 96px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: stretch; position: relative; z-index: 2; min-height: 0; }
+.duo-col { padding: 34px 34px; background: var(--paper); border-top: 4px solid var(--coral); display: flex; flex-direction: column; justify-content: center; }
+.duo-col.sage { border-top-color: var(--sage); } .duo-col.indigo { border-top-color: var(--indigo); } .duo-col.gold { border-top-color: var(--gold); }
+.duo-tag { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-bottom: 16px; }
+.duo-q { font-family: var(--serif); font-size: 30px; font-weight: 500; color: var(--ink); line-height: 1.38; }
+.duo-foot { position: absolute; bottom: 64px; left: 56px; font-size: 18px; color: var(--ink-soft); z-index: 3; }
+.duo-foot strong { color: var(--indigo); }
+
+/* Tarea */
+.tarea { flex: 1; padding: 30px 56px; display: flex; gap: 40px; align-items: center; position: relative; z-index: 2; min-height: 0; }
+.tarea-left { flex: 1.5; display: flex; flex-direction: column; gap: 11px; }
+.tarea-intro { font-size: 20px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 4px; }
+.tarea-item { display: flex; gap: 16px; padding: 13px 20px; background: var(--paper); align-items: baseline; }
+.tarea-n { font-size: 17px; font-weight: 700; color: var(--indigo); min-width: 70px; white-space: nowrap; }
+.tarea-text { font-size: 18px; color: var(--ink-soft); line-height: 1.45; }
+.tarea-right { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.meta { padding: 16px 20px; background: var(--paper); border-top: 3px solid var(--indigo); }
+.meta-label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-bottom: 5px; }
+.meta-text { font-size: 18px; font-weight: 600; color: var(--ink-soft); }
+.spirit { padding: 18px 22px; background: linear-gradient(180deg, rgba(59,76,138,0.09), var(--paper)); border-left: 4px solid var(--indigo); }
+.spirit-label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 6px; }
+.spirit-text { font-family: var(--serif); font-size: 19px; font-style: italic; color: var(--ink); line-height: 1.45; }
+
+/* Cierre */
+.slide-cierre { justify-content: center; align-items: center; padding: 72px; background: var(--ink); position: relative; }
+.cierre-inner { position: relative; z-index: 2; max-width: 940px; text-align: center; }
+.cierre-label { font-size: 16px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 32px; }
+.cierre-text { font-family: var(--serif); font-size: 42px; font-weight: 500; color: var(--paper); line-height: 1.35; margin-bottom: 36px; }
+.cierre-text .hl { color: var(--coral); font-style: italic; }
+.cierre-rule { width: 56px; height: 3px; background: var(--gold); margin: 0 auto 28px; }
+.cierre-q { font-size: 21px; color: #C9CBD6; line-height: 1.5; }
+.cierre-q strong { color: var(--paper); font-weight: 600; }
+.slide-cierre .weave { opacity: 0.28; }
+
+@media (max-width: 1100px) {
+  .portada-title { font-size: 48px; } .slide-h1 { font-size: 28px; } .concepto-text { font-size: 23px; }
+  .apertura-q { font-size: 34px; } .cierre-text { font-size: 32px; } .duo-q { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Sesión 8 · componentes del repaso */
+.slide-apertura, .slide-cierre { position: absolute; }
+.tarea-n { min-width: 112px; }
+.ideas.grid.three { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.ideas.grid.three .idea { flex-direction: column; gap: 12px; padding: 24px 26px; }
+.ideas.grid.three .idea-n { font-size: 44px; }
+.idea.indigo .idea-n { color: var(--indigo); } .idea.coral .idea-n { color: var(--coral); }
+.eje-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.eje-tag { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-soft); background: var(--bone); border: 1px solid var(--line); padding: 5px 10px; }
+.concepto-right .punto { padding: 14px 22px; }
+.sem-dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; margin-right: 10px; vertical-align: -2px; }
+.sem-dot.verde { background: var(--sage); } .sem-dot.amarillo { background: var(--gold); } .sem-dot.rojo { background: var(--coral); }
+.punto.sem-verde { border-color: var(--sage); } .punto.sem-amarillo { border-color: var(--gold); } .punto.sem-rojo { border-color: var(--coral); }
+.punto.sem-verde .punto-num { color: var(--sage); } .punto.sem-amarillo .punto-num { color: var(--gold); } .punto.sem-rojo .punto-num { color: var(--coral); }
+.punto.sem-verde .punto-text, .punto.sem-amarillo .punto-text, .punto.sem-rojo .punto-text { font-family: var(--serif); font-size: 24px; color: var(--ink); }
+.semaforo { position: absolute; bottom: 64px; left: 56px; right: 56px; display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; z-index: 3; }
+.sem-title { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-right: 6px; }
+.sem-item { font-size: 18px; font-weight: 500; color: var(--ink-soft); display: inline-flex; align-items: center; }
+.rubrica { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; }
+.rub-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 22px; background: var(--paper); border-left: 5px solid var(--line); }
+.rub-row.indigo { border-color: var(--indigo); } .rub-row.coral { border-color: var(--coral); } .rub-row.sage { border-color: var(--sage); } .rub-row.gold { border-color: var(--gold); }
+.rub-t { font-size: 19px; color: var(--ink-soft); line-height: 1.3; }
+.rub-p { font-family: var(--serif); font-size: 30px; font-weight: 600; color: var(--ink); line-height: 1; }
+@media (max-width: 1100px) { .ideas.grid.three { grid-template-columns: 1fr; } .rubrica { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 PORTADA -->
+  <section class="slide slide-portada active">
+    <div class="portada-rule"></div>
+    <svg class="weave" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g stroke="#3B4C8A" stroke-width="1.1" opacity="0.30" fill="none">
+        <line x1="1010" y1="140" x2="1150" y2="210"/><line x1="1150" y1="210" x2="1090" y2="350"/>
+        <line x1="1090" y1="350" x2="1215" y2="460"/><line x1="1010" y1="140" x2="1090" y2="350"/>
+        <line x1="1090" y1="350" x2="960" y2="470"/><line x1="960" y1="470" x2="1070" y2="600"/>
+        <line x1="1215" y1="460" x2="1070" y2="600"/><line x1="1150" y1="210" x2="1230" y2="110"/>
+        <line x1="1010" y1="140" x2="900" y2="250"/><line x1="900" y1="250" x2="960" y2="470"/>
+        <line x1="900" y1="250" x2="820" y2="400"/><line x1="820" y1="400" x2="960" y2="470"/>
+      </g>
+      <g fill="#3B4C8A"><circle cx="1090" cy="350" r="9"/></g>
+      <g fill="#E0674F"><circle cx="1010" cy="140" r="7"/><circle cx="1070" cy="600" r="7"/><circle cx="900" cy="250" r="5"/></g>
+      <g fill="#6E8B6A"><circle cx="1150" cy="210" r="6"/><circle cx="960" cy="470" r="6"/><circle cx="1215" cy="460" r="6"/></g>
+      <g fill="#C6A15B"><circle cx="1230" cy="110" r="5"/><circle cx="820" cy="400" r="6"/></g>
+    </svg>
+    <div class="portada-inner">
+      <div class="portada-tag">Vinculación y Difusión · Explayarte · Sesión 8 de 8</div>
+      <h1 class="portada-title">Repaso final: todo el curso en un solo proyecto</h1>
+      <div class="portada-sub">Con quién me conecto, cómo me doy a conocer y cómo sé si funcionó.</div>
+      <div class="portada-divider"></div>
+      <div class="portada-meta">
+        <div class="portada-meta-line"><strong>Lic. en Dirección de Empresas Culturales</strong> · Séptimo semestre</div>
+        <div class="portada-meta-line">Ed Turner · 2026</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 AGENDA -->
+  <section class="slide">
+    <div class="slide-header">
+      <div><div class="kicker">Sesión 8</div><h2 class="slide-h1">Lo que vamos a hacer hoy</h2></div>
+      <div class="slide-num">2</div>
+    </div>
+    <div class="body-pad">
+      <div class="agenda-list">
+        <div class="agenda-row"><div class="agenda-time">10 min</div><div>
+          <div class="agenda-title">Para arrancar · El mapa del curso</div>
+          <div class="agenda-desc">Las siete sesiones en tres ejes, y cómo funciona el semáforo</div></div></div>
+        <div class="agenda-row indigo"><div class="agenda-time">12 min</div><div>
+          <div class="agenda-title">Bloque 1 · Vincular</div>
+          <div class="agenda-desc">Sesiones 1 y 4. Casos: FIL Guadalajara y Bad Bunny</div></div></div>
+        <div class="agenda-row coral"><div class="agenda-time">12 min</div><div>
+          <div class="agenda-title">Bloque 2 · Comunicar y difundir</div>
+          <div class="agenda-desc">Sesiones 2, 3 y 7. Casos: Corona Capital y Spotify Wrapped</div></div></div>
+        <div class="agenda-row sage"><div class="agenda-time">12 min</div><div>
+          <div class="agenda-title">Bloque 3 · Medir y responder</div>
+          <div class="agenda-desc">Sesiones 5 y 6. Caso: Coldplay</div></div></div>
+        <div class="agenda-row gold"><div class="agenda-time">14 min</div><div>
+          <div class="agenda-title">Bloque 4 · Dudas abiertas y entrega</div>
+          <div class="agenda-desc">Rúbrica, video y todas sus preguntas</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 APERTURA DE LA CLASE -->
+  <section class="slide slide-apertura">
+    <div class="apertura-inner">
+      <div class="apertura-label indigo">Para arrancar · 10 min</div>
+      <div class="apertura-q">En una palabra:<br>¿qué es lo que más te ha costado del Proyecto Final?</div>
+      <div class="apertura-rule"></div>
+      <div class="apertura-note">Escríbelo en el <strong>chat de Meet</strong></div>
+    </div>
+  </section>
+
+  <!-- 4 MAPA DEL CURSO -->
+  <section class="slide">
+    <div class="slide-header">
+      <div><div class="kicker">El mapa del curso</div><h2 class="slide-h1">Siete sesiones, tres ejes, un proyecto</h2></div>
+      <div class="slide-num">4</div>
+    </div>
+    <div class="body-pad">
+      <div class="ideas grid three">
+        <div class="idea indigo eje"><div class="idea-n">1</div><div>
+          <div class="idea-t">Vincular</div>
+          <div class="idea-d">Con quién se conecta tu proyecto y quiénes son sus aliados.</div>
+          <div class="eje-tags"><span class="eje-tag">Sesiones 1 y 4</span><span class="eje-tag">Secciones 1 y 4</span></div>
+        </div></div>
+        <div class="idea coral eje"><div class="idea-n">2</div><div>
+          <div class="idea-t">Comunicar y difundir</div>
+          <div class="idea-d">Qué dices, a quién, por dónde, cuándo y con qué herramientas.</div>
+          <div class="eje-tags"><span class="eje-tag">Sesiones 2, 3 y 7</span><span class="eje-tag">Secciones 2, 3, 7 y anexo</span></div>
+        </div></div>
+        <div class="idea sage eje"><div class="idea-n">3</div><div>
+          <div class="idea-t">Medir y responder</div>
+          <div class="idea-d">Cómo sabes si funcionó y qué efecto tiene en la gente y el entorno.</div>
+          <div class="eje-tags"><span class="eje-tag">Sesiones 5 y 6</span><span class="eje-tag">Secciones 5 y 6</span></div>
+        </div></div>
+      </div>
+      <div class="stat-wide">
+        <div class="stat-n">Sección 8</div>
+        <div class="stat-l">El cierre de tu documento junta los tres ejes: <strong>¿cuál fue la decisión más importante de tu plan y por qué?</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 EL SEMÁFORO -->
+  <section class="slide">
+    <div class="slide-header">
+      <div><div class="kicker">Cómo funciona hoy</div><h2 class="slide-h1">El semáforo</h2></div>
+      <div class="slide-num">5</div>
+    </div>
+    <div class="concepto">
+      <div class="concepto-left">
+        <div class="concepto-label">Al final de cada eje</div>
+        <div class="concepto-text">Escribe en el chat cómo vas con esas secciones de tu proyecto. Empezamos por los rojos y los amarillos.</div>
+        <div class="concepto-quote">No hay respuesta mala. Un rojo hoy es un rojo menos en tu entrega.</div>
+      </div>
+      <div class="concepto-right">
+        <div class="punto sem-verde"><div class="punto-num"><span class="sem-dot verde"></span>VERDE</div><div class="punto-text">Me queda claro.</div></div>
+        <div class="punto sem-amarillo"><div class="punto-num"><span class="sem-dot amarillo"></span>AMARILLO</div><div class="punto-text">No estoy seguro.</div></div>
+        <div class="punto sem-rojo"><div class="punto-num"><span class="sem-dot rojo"></span>ROJO</div><div class="punto-text">No entiendo.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BLOQUE 1 · VINCULAR ===================== -->
+
+  <!-- 6 B1 APERTURA -->
+  <section class="slide slide-apertura">
+    <div class="apertura-inner">
+      <div class="apertura-label indigo">Bloque 1 · 12 min</div>
+      <div class="apertura-q">Si tu proyecto fuera una persona,<br>¿quiénes serían sus amigos?</div>
+      <div class="apertura-rule"></div>
+      <div class="apertura-note">Eje 1 · <strong>Vincular</strong> · Sesiones 1 y 4</div>
+    </div>
+  </section>
+
+  <!-- 7 B1 CONCEPTO -->
+  <section class="slide">
+    <div class="band indigo"></div>
+    <div class="slide-header">
+      <div><div class="kicker">Bloque 1 · Repaso</div><h2 class="slide-h1">Vincular es construir relaciones, no juntar contactos</h2></div>
+      <div class="slide-num">7</div>
+    </div>
+    <div class="concepto">
+      <div class="concepto-left">
+        <div class="concepto-label">La idea en una frase</div>
+        <div class="concepto-text">Tu proyecto no vive solo. Vive de la gente, la comunidad y las instituciones con las que se conecta. Y una red funciona cuando las dos partes ganan y la relación dura.</div>
+        <div class="concepto-quote">La gestión cultural es trabajo de juntar actores, no de hacerlo todo solo. (Córdova, 2015)</div>
+      </div>
+      <div class="concepto-right">
+        <div class="punto"><div class="punto-num">SESIÓN 1 · VINCULACIÓN</div><div class="punto-text">Con quién se conecta tu proyecto y por qué. ¿Es producto o servicio?</div></div>
+        <div class="punto"><div class="punto-num">SESIÓN 4 · REDES</div><div class="punto-text">Redes formales e informales. Lo que las sostiene son las relaciones.</div></div>
+        <div class="punto gold"><div class="punto-num">EN TU DOCUMENTO</div><div class="punto-text">Sección 1 (ficha y vinculación) y Sección 4 (red de colaboración).</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 B1 CASO FIL -->
+  <section class="slide">
+    <div class="band indigo"></div>
+    <div class="slide-header">
+      <div><div class="kicker">Bloque 1 · Caso relámpago</div><h2 class="slide-h1">FIL Guadalajara: un proyecto, dos lecturas</h2></div>
+      <div class="slide-num">8</div>
+    </div>
+    <div class="caso">
+      <div class="caso-left">
+        <div class="caso-kicker indigo">Universidad de Guadalajara · Desde 1987</div>
+        <div class="caso-p">La vimos dos veces. En la Sesión 1, como servicio cultural. En la Sesión 4, como nodo que amarra editoriales, universidades, gobiernos y agentes en un solo lugar.</div>
+        <div class="caso-p">Cada año, el Invitado de Honor renueva la red con aliados nuevos.</div>
+        <div class="caso-q indigo">
+          <div class="caso-q-label">Pregunta para ti</div>
+          <div class="caso-q-text">¿Desde cuántos temas del curso se puede leer tu proyecto?</div>
+        </div>
+      </div>
+      <div class="caso-viz">
+        <div class="dato indigo"><div class="dato-big">La más grande</div><div class="dato-text">feria del libro en español, y segunda del mundo después de Frankfurt.</div></div>
+        <div class="dato indigo"><div class="dato-label">Invitado de Honor</div><div class="dato-text">Barcelona en 2025, Italia en 2026. Una alianza nueva cada año.</div></div>
+        <div class="dato"><div class="dato-label">Para tu proyecto</div><div class="dato-text">Un mismo proyecto se lee desde varios temas. Eso es tu documento.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 B1 CASO BAD BUNNY -->
+  <section class="slide">
+    <div class="band indigo"></div>
+    <div class="slide-header">
+      <div><div class="kicker">Bloque 1 · Caso relámpago</div><h2 class="slide-h1">Bad Bunny: la red se cultiva antes de necesitarla</h2></div>
+      <div class="slide-num">9</div>
+    </div>
+    <div class="caso">
+      <div class="caso-left">
+        <div class="caso-kicker indigo">Bad Bunny · Noah Assad · Rimas Entertainment</div>
+        <div class="caso-p">Llegó a lo más alto del pop mundial sin firmar con una disquera grande. Lo sostuvo una red propia: su manager Noah Assad, el sello independiente Rimas y colaboradores que se repiten con los años.</div>
+        <div class="caso-p">Lo vimos en la Sesión 4: lo que hace fuerte a esa red no es el tamaño, es la lealtad.</div>
+        <div class="caso-q indigo">
+          <div class="caso-q-label">Pregunta para ti</div>
+          <div class="caso-q-text">¿Tus aliados ya te conocen, o los vas a buscar hasta que los necesites?</div>
+        </div>
+      </div>
+      <div class="caso-viz">
+        <div class="dato indigo"><div class="dato-label">Lo formal</div><div class="dato-text">Un sello independiente y un manager que apuestan por el artista.</div></div>
+        <div class="dato indigo"><div class="dato-label">Lo interpersonal</div><div class="dato-text">Colaboradores que regresan proyecto tras proyecto.</div></div>
+        <div class="dato"><div class="dato-label">La lección</div><div class="dato-text">Una red se mide por cuánto dura, no por cuánta gente tiene.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 B1 CHECK -->
+  <section class="slide">
+    <div class="band indigo"></div>
+    <div class="slide-header">
+      <div><div class="kicker">Bloque 1 · Check de tu proyecto</div><h2 class="slide-h1">Ahora tu proyecto</h2></div>
+      <div class="slide-num">10</div>
+    </div>
+    <div class="duo">
+      <div class="duo-col indigo"><div class="duo-tag">Pregunta 1</div><div class="duo-q">Nombra a tus tres aliados.</div></div>
+      <div class="duo-col indigo"><div class="duo-tag">Pregunta 2</div><div class="duo-q">¿Qué gana cada uno por trabajar contigo?</div></div>
+    </div>
+    <div class="semaforo">
+      <span class="sem-title">Semáforo en el chat · Secciones 1 y 4</span>
+      <span class="sem-item"><span class="sem-dot verde"></span>Me queda claro</span>
+      <span class="sem-item"><span class="sem-dot amarillo"></span>No estoy seguro</span>
+      <span class="sem-item"><span class="sem-dot rojo"></span>No entiendo</span>
+    </div>
+  </section>
+
+  <!-- ===================== BLOQUE 2 · COMUNICAR Y DIFUNDIR ===================== -->
+
+  <!-- 11 B2 APERTURA -->
+  <section class="slide slide-apertura">
+    <div class="apertura-inner">
+      <div class="apertura-label">Bloque 2 · 12 min</div>
+      <div class="apertura-q">Alguien ve tu proyecto por primera vez.<br>¿Qué frase quieres que se lleve?</div>
+      <div class="apertura-rule"></div>
+      <div class="apertura-note">Eje 2 · <strong>Comunicar y difundir</strong> · Sesiones 2, 3 y 7</div>
+    </div>
+  </section>
+
+  <!-- 12 B2 CONCEPTO -->
+  <section class="slide">
+    <div class="band coral"></div>
+    <div class="slide-header">
+      <div><div class="kicker coral">Bloque 2 · Repaso</div><h2 class="slide-h1">Primero qué digo y a quién. Después por dónde y cuándo.</h2></div>
+      <div class="slide-num">12</div>
+    </div>
+    <div class="concepto">
+      <div class="concepto-left">
+        <div class="concepto-label coral">La idea en una frase</div>
+        <div class="concepto-text">La estrategia decide qué quieres lograr, con quién y qué le dices. La difusión decide por dónde y en qué momento. Las herramientas digitales, cómo lo operas cada semana. En ese orden.</div>
+        <div class="concepto-quote">Público y mensaje antes que medios. (Kotler y Keller, 2012)</div>
+      </div>
+      <div class="concepto-right">
+        <div class="punto coral"><div class="punto-num">SESIÓN 2 · ESTRATEGIA</div><div class="punto-text">Objetivo medible, público, mensaje clave y tono.</div></div>
+        <div class="punto coral"><div class="punto-num">SESIÓN 3 · DIFUSIÓN</div><div class="punto-text">Canales digitales y no digitales. Antes, durante y después.</div></div>
+        <div class="punto coral"><div class="punto-num">SESIÓN 7 · DIGITAL</div><div class="punto-text">Medios propios, pagados y ganados. Un canal que sea tuyo.</div></div>
+        <div class="punto gold"><div class="punto-num">EN TU DOCUMENTO</div><div class="punto-text">Secciones 2, 3 y 7, más el anexo del calendario.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 B2 CASO CORONA CAPITAL -->
+  <section class="slide">
+    <div class="band coral"></div>
+    <div class="slide-header">
+      <div><div class="kicker coral">Bloque 2 · Caso relámpago</div><h2 class="slide-h1">Corona Capital: contar el festival por capítulos</h2></div>
+      <div class="slide-num">13</div>
+    </div>
+    <div class="caso">
+      <div class="caso-left">
+        <div class="caso-kicker">OCESA · Autódromo Hermanos Rodríguez · CDMX</div>
+        <div class="caso-p">Lo vimos en la Sesión 2. No sueltan todo de golpe: expectativa, anuncio del cartel, preventa, venta general, horarios y mapa. Cada pieza sale en su momento.</div>
+        <div class="caso-p">Y el tono es el mismo de principio a fin. Meses de conversación con una sola voz.</div>
+        <div class="caso-q">
+          <div class="caso-q-label">Pregunta para ti</div>
+          <div class="caso-q-text">Tu calendario, ¿cuenta una historia por capítulos o suelta todo el mismo día?</div>
+        </div>
+      </div>
+      <div class="caso-viz">
+        <div class="dato coral"><div class="dato-big">3 de junio</div><div class="dato-text">anuncio del cartel 2025, con transmisión en vivo.</div></div>
+        <div class="dato coral"><div class="dato-big">14 al 16 nov</div><div class="dato-text">fechas del festival 2025. Más de cinco meses de comunicación sostenida.</div></div>
+        <div class="dato"><div class="dato-label">Para tu proyecto</div><div class="dato-text">Antes, durante y después: justo lo que te pide la Sección 3.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 B2 CASO SPOTIFY WRAPPED -->
+  <section class="slide">
+    <div class="band coral"></div>
+    <div class="slide-header">
+      <div><div class="kicker coral">Bloque 2 · Caso relámpago</div><h2 class="slide-h1">Spotify Wrapped: la difusión la hace el público</h2></div>
+      <div class="slide-num">14</div>
+    </div>
+    <div class="caso">
+      <div class="caso-left">
+        <div class="caso-kicker">Spotify · Cada diciembre</div>
+        <div class="caso-p">Lo vimos en la Sesión 5 como evaluación y en la Sesión 7 como herramienta digital. Spotify toma lo que escuchaste en el año y te lo regresa en un formato hecho para compartir.</div>
+        <div class="caso-p">La gente lo sube a sus historias por gusto. Nadie le paga por hacerlo.</div>
+        <div class="caso-q">
+          <div class="caso-q-label">Pregunta para ti</div>
+          <div class="caso-q-text">¿Qué parte de tu proyecto le daría a tu público ganas de compartirlo?</div>
+        </div>
+      </div>
+      <div class="caso-viz">
+        <div class="dato coral"><div class="dato-label">El dato</div><div class="dato-text">Lo que cada persona escuchó durante el año.</div></div>
+        <div class="dato coral"><div class="dato-label">El formato</div><div class="dato-text">Vertical, personal y pensado para historias.</div></div>
+        <div class="dato"><div class="dato-label">El efecto</div><div class="dato-text">Medio ganado: el público difunde la marca sin que se le pague.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 B2 CHECK -->
+  <section class="slide">
+    <div class="band coral"></div>
+    <div class="slide-header">
+      <div><div class="kicker coral">Bloque 2 · Check de tu proyecto</div><h2 class="slide-h1">Ahora tu proyecto</h2></div>
+      <div class="slide-num">15</div>
+    </div>
+    <div class="duo">
+      <div class="duo-col"><div class="duo-tag">Pregunta 1</div><div class="duo-q">Lee tu mensaje clave. ¿Cada publicación de tu calendario lo empuja?</div></div>
+      <div class="duo-col"><div class="duo-tag">Pregunta 2</div><div class="duo-q">Tus canales, ¿los elegiste por tu público o por costumbre?</div></div>
+    </div>
+    <div class="semaforo">
+      <span class="sem-title">Semáforo en el chat · Secciones 2, 3, 7 y anexo</span>
+      <span class="sem-item"><span class="sem-dot verde"></span>Me queda claro</span>
+      <span class="sem-item"><span class="sem-dot amarillo"></span>No estoy seguro</span>
+      <span class="sem-item"><span class="sem-dot rojo"></span>No entiendo</span>
+    </div>
+  </section>
+
+  <!-- ===================== BLOQUE 3 · MEDIR Y RESPONDER ===================== -->
+
+  <!-- 16 B3 APERTURA -->
+  <section class="slide slide-apertura">
+    <div class="apertura-inner">
+      <div class="apertura-label sage">Bloque 3 · 12 min</div>
+      <div class="apertura-q">¿Cómo vas a saber, con algo que se pueda medir,<br>que tu proyecto funcionó?</div>
+      <div class="apertura-rule"></div>
+      <div class="apertura-note">Eje 3 · <strong>Medir y responder</strong> · Sesiones 5 y 6</div>
+    </div>
+  </section>
+
+  <!-- 17 B3 CONCEPTO -->
+  <section class="slide">
+    <div class="band sage"></div>
+    <div class="slide-header">
+      <div><div class="kicker sage">Bloque 3 · Repaso</div><h2 class="slide-h1">Si no lo mides, no sabes. Si no le hace bien a nadie, no importa.</h2></div>
+      <div class="slide-num">17</div>
+    </div>
+    <div class="concepto">
+      <div class="concepto-left">
+        <div class="concepto-label sage">La idea en una frase</div>
+        <div class="concepto-text">Mide con números y con lo que dice la gente. Y la responsabilidad social va en cómo funciona tu proyecto, no solo en lo que publica.</div>
+        <div class="concepto-quote">Un indicador completo tiene tres cosas: qué mides, cómo y cuándo lo mides, y una meta.</div>
+      </div>
+      <div class="concepto-right">
+        <div class="punto sage"><div class="punto-num">SESIÓN 5 · EVALUACIÓN</div><div class="punto-text">Cuantitativo y cualitativo: cifras y testimonios.</div></div>
+        <div class="punto sage"><div class="punto-num">SESIÓN 6 · RESPONSABILIDAD SOCIAL</div><div class="punto-text">Cuatro caras: ambiental, social, económica y cultural.</div></div>
+        <div class="punto gold"><div class="punto-num">EN TU DOCUMENTO</div><div class="punto-text">Sección 5 (evaluación) y Sección 6 (responsabilidad social).</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 B3 CASO COLDPLAY -->
+  <section class="slide">
+    <div class="band sage"></div>
+    <div class="slide-header">
+      <div><div class="kicker sage">Bloque 3 · Caso relámpago</div><h2 class="slide-h1">Coldplay: medir, cumplir y aun así recibir críticas</h2></div>
+      <div class="slide-num">18</div>
+    </div>
+    <div class="caso">
+      <div class="caso-left">
+        <div class="caso-kicker sage">Music of the Spheres World Tour · Desde 2022</div>
+        <div class="caso-p">Lo vimos en la Sesión 6. Prometieron bajar al menos 50% sus emisiones directas y lo midieron: pisos que generan energía al bailar, bicis para cargar baterías, un árbol por boleto.</div>
+        <div class="caso-p">El pero: su alianza con Neste, una petrolera finlandesa, para el combustible "sustentable". Ahí llegaron las acusaciones de greenwashing.</div>
+        <div class="caso-q sage">
+          <div class="caso-q-label">Pregunta para ti</div>
+          <div class="caso-q-text">Si le quitas las acciones verdes a la gira, ¿cambia el proyecto o solo cambia su comunicación?</div>
+        </div>
+      </div>
+      <div class="caso-viz">
+        <div class="dato sage"><div class="dato-big">59%</div><div class="dato-text">menos emisiones directas que su gira anterior (2016-17), show por show.</div></div>
+        <div class="dato sage"><div class="dato-label">Medir también comunica</div><div class="dato-text">Como Wrapped: un dato bien presentado cuenta una historia.</div></div>
+        <div class="dato"><div class="dato-label">Para tu proyecto</div><div class="dato-text">La RS tiene que estar en el modelo, no solo en el post.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 19 B3 CHECK -->
+  <section class="slide">
+    <div class="band sage"></div>
+    <div class="slide-header">
+      <div><div class="kicker sage">Bloque 3 · Check de tu proyecto</div><h2 class="slide-h1">Ahora tu proyecto</h2></div>
+      <div class="slide-num">19</div>
+    </div>
+    <div class="duo">
+      <div class="duo-col sage"><div class="duo-tag">Pregunta 1</div><div class="duo-q">¿Cada indicador tiene cómo medirlo, cuándo y una meta?</div></div>
+      <div class="duo-col sage"><div class="duo-tag">Pregunta 2</div><div class="duo-q">Si quitas tus acciones de RS, ¿cambia tu proyecto o solo tu comunicación?</div></div>
+    </div>
+    <div class="semaforo">
+      <span class="sem-title">Semáforo en el chat · Secciones 5 y 6</span>
+      <span class="sem-item"><span class="sem-dot verde"></span>Me queda claro</span>
+      <span class="sem-item"><span class="sem-dot amarillo"></span>No estoy seguro</span>
+      <span class="sem-item"><span class="sem-dot rojo"></span>No entiendo</span>
+    </div>
+  </section>
+
+  <!-- ===================== BLOQUE 4 · DUDAS Y ENTREGA ===================== -->
+
+  <!-- 20 B4 APERTURA -->
+  <section class="slide slide-apertura">
+    <div class="apertura-inner">
+      <div class="apertura-label gold">Bloque 4 · 14 min</div>
+      <div class="apertura-q">Última vuelta antes de entregar.<br>¿Qué te falta para cerrar tu proyecto?</div>
+      <div class="apertura-rule"></div>
+      <div class="apertura-note">Primero atendemos los <strong>rojos y amarillos</strong> del semáforo</div>
+    </div>
+  </section>
+
+  <!-- 21 B4 RÚBRICA -->
+  <section class="slide">
+    <div class="band gold"></div>
+    <div class="slide-header">
+      <div><div class="kicker gold">Bloque 4 · La rúbrica</div><h2 class="slide-h1">Cómo se califica: 10 puntos</h2></div>
+      <div class="slide-num">21</div>
+    </div>
+    <div class="body-pad">
+      <div class="rubrica">
+        <div class="rub-row indigo"><div class="rub-t">Ficha y vinculación</div><div class="rub-p">1</div></div>
+        <div class="rub-row coral"><div class="rub-t">Comunicación y difusión</div><div class="rub-p">2</div></div>
+        <div class="rub-row indigo"><div class="rub-t">Red de colaboración</div><div class="rub-p">1</div></div>
+        <div class="rub-row sage"><div class="rub-t">Evaluación</div><div class="rub-p">1</div></div>
+        <div class="rub-row sage"><div class="rub-t">Responsabilidad social</div><div class="rub-p">1</div></div>
+        <div class="rub-row coral"><div class="rub-t">Herramientas digitales y calendario</div><div class="rub-p">1.5</div></div>
+        <div class="rub-row gold"><div class="rub-t">Video</div><div class="rub-p">1.5</div></div>
+        <div class="rub-row"><div class="rub-t">Forma: indicaciones, APA, ortografía</div><div class="rub-p">1</div></div>
+      </div>
+      <div class="stat-wide">
+        <div class="stat-n">En todos</div>
+        <div class="stat-l">Lo que más pesa es la <strong>justificación</strong>. Si te pregunto "¿por qué decidiste esto?", la respuesta tiene que estar en tu documento.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 B4 VIDEO -->
+  <section class="slide">
+    <div class="band gold"></div>
+    <div class="slide-header">
+      <div><div class="kicker gold">Bloque 4 · El video</div><h2 class="slide-h1">Tres cosas para que tu video funcione</h2></div>
+      <div class="slide-num">22</div>
+    </div>
+    <div class="body-pad">
+      <div class="ideas grid three">
+        <div class="idea gold"><div class="idea-n">1</div><div><div class="idea-t">5 minutos máximo</div><div class="idea-d">Si te pasas, cuenta en la calificación. Ensaya una vez con cronómetro.</div></div></div>
+        <div class="idea gold"><div class="idea-n">2</div><div><div class="idea-t">Tu cara al inicio</div><div class="idea-d">Puedes usar slides o imágenes, pero que te veamos por lo menos al arrancar.</div></div></div>
+        <div class="idea gold"><div class="idea-n">3</div><div><div class="idea-t">No leas el documento</div><div class="idea-d">Cuenta qué es, tu estrategia, tres decisiones clave y cómo sabrás si funcionó.</div></div></div>
+      </div>
+      <div class="stat-wide">
+        <div class="stat-n">Antes de entregar</div>
+        <div class="stat-l">Abre tu link en una <strong>ventana de incógnito</strong> para checar que funcione.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 23 B4 DUDAS ABIERTAS -->
+  <section class="slide slide-apertura">
+    <div class="apertura-inner">
+      <div class="apertura-label gold">Dudas abiertas · 7 min</div>
+      <div class="apertura-q">Micrófono abierto.<br>Pregunten lo que sea del proyecto.</div>
+      <div class="apertura-rule"></div>
+      <div class="apertura-note">Levanta la mano en Meet o escríbela en el <strong>chat</strong></div>
+    </div>
+  </section>
+
+  <!-- 24 B4 ENTREGA -->
+  <section class="slide">
+    <div class="slide-header">
+      <div><div class="kicker gold">Lo que sigue</div><h2 class="slide-h1">Tu Proyecto Final</h2></div>
+      <div class="slide-num">24</div>
+    </div>
+    <div class="tarea">
+      <div class="tarea-left">
+        <div class="tarea-intro">Un plan de vinculación y difusión para un proyecto cultural, real o inventado.</div>
+        <div class="tarea-item"><div class="tarea-n">Documento</div><div class="tarea-text">Las ocho secciones más el anexo del calendario. Word o PDF, de 5 a 8 cuartillas.</div></div>
+        <div class="tarea-item"><div class="tarea-n">Video</div><div class="tarea-text">Máximo 5 minutos, como si se lo presentaras a alguien que puede apoyarlo.</div></div>
+        <div class="tarea-item"><div class="tarea-n">Cómo</div><div class="tarea-text">Individual. Los dos entregables por Classroom.</div></div>
+      </div>
+      <div class="tarea-right">
+        <div class="meta"><div class="meta-label">Formato</div><div class="meta-text">Arial, Helvética o Verdana 12 · Citas en APA</div></div>
+        <div class="spirit"><div class="spirit-label">El espíritu</div><div class="spirit-text">No busco el proyecto más grande ni el más espectacular. Busco que cada decisión esté justificada con lo que vimos en clase.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 25 CIERRE -->
+  <section class="slide slide-cierre">
+    <svg class="weave" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g stroke="#C6A15B" stroke-width="1.1" opacity="0.5" fill="none">
+        <line x1="160" y1="210" x2="340" y2="320"/><line x1="340" y1="320" x2="210" y2="470"/>
+        <line x1="340" y1="320" x2="520" y2="190"/><line x1="520" y1="190" x2="700" y2="330"/>
+        <line x1="700" y1="330" x2="880" y2="220"/><line x1="880" y1="220" x2="1060" y2="370"/>
+        <line x1="700" y1="330" x2="640" y2="530"/><line x1="1060" y1="370" x2="1120" y2="570"/>
+        <line x1="210" y1="470" x2="420" y2="580"/><line x1="880" y1="220" x2="1100" y2="140"/>
+        <line x1="420" y1="580" x2="640" y2="530"/><line x1="640" y1="530" x2="1120" y2="570"/>
+      </g>
+      <g fill="#E0674F"><circle cx="160" cy="210" r="7"/><circle cx="520" cy="190" r="7"/><circle cx="880" cy="220" r="7"/><circle cx="640" cy="530" r="6"/></g>
+      <g fill="#6E8B6A"><circle cx="340" cy="320" r="8"/><circle cx="700" cy="330" r="8"/><circle cx="1060" cy="370" r="6"/><circle cx="210" cy="470" r="6"/><circle cx="420" cy="580" r="5"/><circle cx="1120" cy="570" r="6"/></g>
+      <g fill="#C6A15B"><circle cx="1100" cy="140" r="5"/></g>
+    </svg>
+    <div class="cierre-inner">
+      <div class="cierre-label">Para cerrar el curso</div>
+      <div class="cierre-text">Un proyecto cultural no se sostiene por ser bueno. Se sostiene por <span class="hl">la gente que logra juntar alrededor.</span></div>
+      <div class="cierre-rule"></div>
+      <div class="cierre-q">Gracias por estas ocho sesiones. <strong>Nos vemos en sus proyectos.</strong></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="counter" id="counter">01 / 25</div>
+<div class="nav">
+  <button onclick="prevSlide()" aria-label="Anterior">‹</button>
+  <button onclick="nextSlide()" aria-label="Siguiente">›</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+const progressBar = document.getElementById('progressBar');
+const counter = document.getElementById('counter');
+function showSlide(index) {
+  if (index < 0) index = slides.length - 1;
+  if (index >= slides.length) index = 0;
+  slides[current].classList.remove('active');
+  current = index;
+  slides[current].classList.add('active');
+  progressBar.style.width = ((current + 1) / slides.length * 100) + '%';
+  counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+}
+function nextSlide() { showSlide(current + 1); }
+function prevSlide() { showSlide(current - 1); }
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+});
+showSlide(0);
+</script>
+</body>
+</html>
